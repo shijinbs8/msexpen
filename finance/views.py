@@ -25,8 +25,13 @@ from .telegram_bot import parse_and_process_message, send_telegram_message, is_c
 
 def global_settings_context(request):
     """Context processor available in all templates."""
+    try:
+        categories = Category.objects.filter(is_active=True).order_by('category_type', 'name')
+    except Exception:
+        categories = []
     return {
         'CURRENCY': get_currency(),
+        'global_categories': categories,
     }
 
 # --- DASHBOARD ---

@@ -151,12 +151,11 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">CATEGORY</label>
-                            <select name="category" class="form-select form-select-lg" required>
+                            <label class="form-label text-muted small fw-bold">CATEGORY *</label>
+                            <select name="category" id="quick_add_category" class="form-select form-select-lg" required>
+                                <option value="">-- Select Category --</option>
                                 {% for cat in global_categories %}
-                                    <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
-                                {% empty %}
-                                    <option value="">-- Select Category --</option>
+                                    <option value="{{ cat.id }}" data-type="{{ cat.category_type }}">{{ cat.icon }} {{ cat.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>

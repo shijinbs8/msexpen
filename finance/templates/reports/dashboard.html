@@ -41,37 +41,37 @@
 
     <!-- KPI SUMMARY METRICS -->
     <div class="col-6 col-md-3">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <div class="stat-icon-wrapper stat-income">
                 <i class="bi bi-arrow-down-left"></i>
             </div>
-            <div>
+            <div class="overflow-hidden">
                 <span class="text-muted small d-block">Total Income</span>
-                <span class="fw-bold fs-5 text-success">{{ report.formatted_income }}</span>
+                <span class="stat-amount text-success">{{ report.formatted_income }}</span>
             </div>
         </div>
     </div>
 
     <div class="col-6 col-md-3">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <div class="stat-icon-wrapper stat-expense">
                 <i class="bi bi-arrow-up-right"></i>
             </div>
-            <div>
+            <div class="overflow-hidden">
                 <span class="text-muted small d-block">Total Expenses</span>
-                <span class="fw-bold fs-5 text-danger">{{ report.formatted_expense }}</span>
+                <span class="stat-amount text-danger">{{ report.formatted_expense }}</span>
             </div>
         </div>
     </div>
 
     <div class="col-6 col-md-3">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <div class="stat-icon-wrapper bg-indigo-subtle text-indigo">
                 <i class="bi bi-wallet2"></i>
             </div>
-            <div>
+            <div class="overflow-hidden">
                 <span class="text-muted small d-block">Net Balance</span>
-                <span class="fw-bold fs-5 {% if report.net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                <span class="stat-amount {% if report.net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
                     {{ report.formatted_net }}
                 </span>
             </div>
@@ -79,13 +79,13 @@
     </div>
 
     <div class="col-6 col-md-3">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <div class="stat-icon-wrapper bg-light text-dark">
                 <i class="bi bi-receipt"></i>
             </div>
-            <div>
+            <div class="overflow-hidden">
                 <span class="text-muted small d-block">Transactions</span>
-                <span class="fw-bold fs-5 text-dark">{{ report.total_count }}</span>
+                <span class="stat-amount text-dark">{{ report.total_count }}</span>
             </div>
         </div>
     </div>

@@ -1,22 +1,46 @@
 /**
- * Transactions JavaScript Helpers
+ * Transactions JavaScript Helpers & Dynamic Category Filter
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Expense vs Income Type Toggle in Add Form
     const typeToggleExpense = document.getElementById('toggleExpense');
     const typeToggleIncome = document.getElementById('toggleIncome');
     const hiddenTypeInput = document.getElementById('id_transaction_type');
-    const categorySelect = document.getElementById('id_category');
+    
+    // Select inputs (both Quick Add modal select & main form select)
+    const categorySelects = [
+        document.getElementById('id_category'),
+        document.getElementById('quick_add_category')
+    ].filter(el => el !== null);
 
-    function updateCategoryDropdown(selectedType) {
-        if (!categorySelect) return;
-        const options = categorySelect.options;
-        for (let i = 0; i < options.length; i++) {
-            const opt = options[i];
-            const text = opt.text.toLowerCase();
-            // Optional dynamic filtering if options have attributes or text indicators
-        }
+    function filterCategoriesByType(selectedType) {
+        categorySelects.forEach(select => {
+            let firstMatchedVal = '';
+            let hasSelectedCurrent = false;
+
+            Array.from(select.options).forEach(opt => {
+                if (opt.value === '') {
+                    opt.hidden = false;
+                    return;
+                }
+                const catType = opt.getAttribute('data-type');
+                if (!catType || catType === selectedType) {
+                    opt.hidden = false;
+                    opt.disabled = false;
+                    if (!firstMatchedVal) firstMatchedVal = opt.value;
+                    if (opt.selected) hasSelectedCurrent = true;
+                } else {
+                    opt.hidden = true;
+                    opt.disabled = true;
+                    if (opt.selected) opt.selected = false;
+                }
+            });
+
+            // If current selection was hidden or empty, auto select first matched
+            if (!hasSelectedCurrent && firstMatchedVal) {
+                select.value = firstMatchedVal;
+            }
+        });
     }
 
     if (typeToggleExpense && typeToggleIncome && hiddenTypeInput) {
@@ -24,15 +48,22 @@ document.addEventListener('DOMContentLoaded', function () {
             typeToggleExpense.classList.add('active-expense');
             typeToggleIncome.classList.remove('active-income');
             hiddenTypeInput.value = 'EXPENSE';
-            updateCategoryDropdown('EXPENSE');
+            filterCategoriesByType('EXPENSE');
         });
 
         typeToggleIncome.addEventListener('click', function () {
             typeToggleIncome.classList.add('active-income');
             typeToggleExpense.classList.remove('active-expense');
             hiddenTypeInput.value = 'INCOME';
-            updateCategoryDropdown('INCOME');
+            filterCategoriesByType('INCOME');
         });
+
+        // Initialize category filter based on initial hidden type value
+        const initialType = hiddenTypeInput.value || 'EXPENSE';
+        filterCategoriesByType(initialType);
+    } else {
+        // Fallback initial filter if toggles aren't on page
+        filterCategoriesByType('EXPENSE');
     }
 
     // Quick Add Modal Form AJAX Handler
@@ -52,13 +83,12 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    // Close modal and reload page
                     const modalEl = document.getElementById('quickAddModal');
                     const modalInstance = bootstrap.Modal.getInstance(modalEl);
                     if (modalInstance) modalInstance.hide();
                     window.location.reload();
                 } else {
-                    alert("Error saving transaction: " + (data.message || "Please check inputs"));
+                    alert("Error saving transaction: " + (data.message || "Please select a valid category and amount."));
                 }
             })
             .catch(err => {
