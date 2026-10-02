@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Transaction | Personal Finance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-3 text-center">➕ Add New Transaction</h5>
+
+            <form method="POST" action="{% url 'transaction_add' %}">
+                {% csrf_token %}
+
+                <!-- TYPE TOGGLE BUTTONS -->
+                <div class="type-toggle-group">
+                    <button type="button" id="toggleExpense" class="type-toggle-btn {% if initial_type != 'INCOME' %}active-expense{% endif %}">
+                        💸 Expense
+                    </button>
+                    <button type="button" id="toggleIncome" class="type-toggle-btn {% if initial_type == 'INCOME' %}active-income{% endif %}">
+                        💰 Income
+                    </button>
+                </div>
+                {{ form.transaction_type }}
+
+                <!-- AMOUNT -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">AMOUNT ({{ CURRENCY }}) *</label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                        <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- CATEGORY -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">CATEGORY *</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">DESCRIPTION</label>
+                    {{ form.description }}
+                </div>
+
+                <!-- DATE -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">DATE *</label>
+                    {{ form.transaction_date }}
+                </div>
+
+                <!-- PAYMENT METHOD -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">PAYMENT METHOD</label>
+                    {{ form.payment_method }}
+                </div>
+
+                <!-- NOTES -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">NOTES</label>
+                    {{ form.notes }}
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary-lg">
+                        <i class="bi bi-check-lg me-1"></i> Save Transaction
+                    </button>
+                    <a href="{% url 'transaction_list' %}" class="btn btn-light fw-semibold">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

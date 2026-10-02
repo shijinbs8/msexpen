@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings | Personal Finance{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- 1. CURRENCY SETTINGS -->
+    <div class="col-12 col-md-6">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-3">💱 Currency Settings</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_currency">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">DEFAULT CURRENCY CODE</label>
+                    <div class="input-group">
+                        <input type="text" name="currency" value="{{ currency }}" class="form-control form-control-lg text-uppercase font-monospace fw-bold" placeholder="e.g. AED, USD, EUR" required>
+                        <button type="submit" class="btn btn-primary fw-bold">Save</button>
+                    </div>
+                    <div class="form-text">All financial cards and reports will format values like <code>{{ currency }} 2,450.00</code>.</div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. TELEGRAM BOT SETTINGS -->
+    <div class="col-12 col-md-6">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-3">🤖 Telegram Bot Integration</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_telegram">
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">TELEGRAM BOT TOKEN</label>
+                    <input type="text" name="telegram_bot_token" value="{{ bot_token }}" class="form-control font-monospace" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyZ">
+                    <div class="form-text">Obtain from @BotFather on Telegram.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">ALLOWED CHAT ID (SECURITY)</label>
+                    <input type="text" name="telegram_allowed_chat_id" value="{{ allowed_chat_id }}" class="form-control font-monospace" placeholder="e.g. 987654321">
+                    <div class="form-text">Only messages from this Telegram chat ID will be allowed to modify database.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary fw-bold w-100 py-2 mb-3">
+                    <i class="bi bi-shield-lock-fill me-1"></i> Save Telegram Configuration
+                </button>
+            </form>
+
+            <div class="p-3 bg-light rounded-3 border">
+                <div class="fw-bold mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Telegram Commands Supported:</div>
+                <div class="small text-muted">
+                    <code>/start</code>, <code>/balance</code>, <code>/today</code>, <code>/week</code>, <code>/month</code>, <code>/recent</code><br>
+                    <strong>Quick transaction messages:</strong><br>
+                    • <code>expense 250 food lunch</code><br>
+                    • <code>income 5000 salary</code><br>
+                    • <i>spent 200 on food</i> &bull; <i>received 5000 salary</i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CATEGORY MANAGEMENT -->
+    <div class="col-12">
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">📁 Category Manager</h5>
+                <button class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="collapse" data-bs-target="#addCategoryCollapse">
+                    <i class="bi bi-plus-lg me-1"></i> Add Category
+                </button>
+            </div>
+
+            <!-- Add Category Collapsible Form -->
+            <div class="collapse mb-4" id="addCategoryCollapse">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold mb-2">New Category</h6>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_category">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-4">
+                                {{ category_form.name }}
+                            </div>
+                            <div class="col-6 col-md-3">
+                                {{ category_form.category_type }}
+                            </div>
+                            <div class="col-3 col-md-2">
+                                {{ category_form.icon }}
+                            </div>
+                            <div class="col-3 col-md-1">
+                                {{ category_form.color }}
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <button type="submit" class="btn btn-success fw-bold w-100">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Categories List Grid -->
+            <div class="row g-2">
+                {% for cat in categories %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="p-2 border rounded-3 bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fs-5">{{ cat.icon }}</span>
+                                <span class="fw-semibold small">{{ cat.name }}</span>
+                            </div>
+                            <span class="badge {% if cat.category_type == 'INCOME' %}bg-success{% else %}bg-danger{% endif %} text-white fs-8">
+                                {{ cat.get_category_type_display }}
+                            </span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-muted text-center py-3">No categories found. Run <code>python manage.py seed_categories</code> to populate defaults.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

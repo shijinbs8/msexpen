@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Financial Reports | Personal Finance{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- PERIOD FILTER & DOWNLOAD ACTIONS -->
+    <div class="col-12">
+        <div class="glass-card">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <form method="GET" action="{% url 'reports' %}" class="d-flex flex-wrap align-items-center gap-2">
+                    <select name="period" class="form-select w-auto fw-bold" onchange="this.form.submit()">
+                        <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
+                        <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if period == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="last_month" {% if period == 'last_month' %}selected{% endif %}>Last Month</option>
+                        <option value="custom" {% if period == 'custom' %}selected{% endif %}>Custom Range</option>
+                    </select>
+
+                    {% if period == 'custom' %}
+                        <input type="date" name="start_date" value="{{ custom_start }}" class="form-control w-auto">
+                        <span class="text-muted">to</span>
+                        <input type="date" name="end_date" value="{{ custom_end }}" class="form-control w-auto">
+                        <button type="submit" class="btn btn-sm btn-primary fw-bold">Filter</button>
+                    {% endif %}
+                </form>
+
+                <!-- DOWNLOAD BUTTONS -->
+                <div class="d-flex gap-2 ms-auto">
+                    <a href="{% url 'export_report' 'csv' %}?period={{ period }}&start_date={{ custom_start }}&end_date={{ custom_end }}" class="btn btn-outline-success btn-sm fw-bold">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV
+                    </a>
+                    <a href="{% url 'export_report' 'pdf' %}?period={{ period }}&start_date={{ custom_start }}&end_date={{ custom_end }}" class="btn btn-outline-danger btn-sm fw-bold">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI SUMMARY METRICS -->
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon-wrapper stat-income">
+                <i class="bi bi-arrow-down-left"></i>
+            </div>
+            <div>
+                <span class="text-muted small d-block">Total Income</span>
+                <span class="fw-bold fs-5 text-success">{{ report.formatted_income }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon-wrapper stat-expense">
+                <i class="bi bi-arrow-up-right"></i>
+            </div>
+            <div>
+                <span class="text-muted small d-block">Total Expenses</span>
+                <span class="fw-bold fs-5 text-danger">{{ report.formatted_expense }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon-wrapper bg-indigo-subtle text-indigo">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div>
+                <span class="text-muted small d-block">Net Balance</span>
+                <span class="fw-bold fs-5 {% if report.net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ report.formatted_net }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon-wrapper bg-light text-dark">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div>
+                <span class="text-muted small d-block">Transactions</span>
+                <span class="fw-bold fs-5 text-dark">{{ report.total_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADDITIONAL INSIGHT CARDS -->
+    <div class="col-12 col-md-4">
+        <div class="glass-card text-center p-3">
+            <span class="text-muted small fw-bold d-block mb-1">LARGEST EXPENSE</span>
+            <span class="fs-4 fw-extrabold text-danger">{{ report.formatted_largest }}</span>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="glass-card text-center p-3">
+            <span class="text-muted small fw-bold d-block mb-1">TOP EXPENSE CATEGORY</span>
+            <span class="fs-5 fw-bold text-dark">{{ report.top_category_name }}</span>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="glass-card text-center p-3">
+            <span class="text-muted small fw-bold d-block mb-1">AVERAGE DAILY EXPENSE</span>
+            <span class="fs-4 fw-extrabold text-primary">{{ report.formatted_avg_daily }}</span>
+        </div>
+    </div>
+
+    <!-- CATEGORY BREAKDOWN LIST -->
+    <div class="col-12 col-lg-5">
+        <div class="glass-card">
+            <h6 class="fw-bold mb-3">🍕 Expense Category Breakdown</h6>
+            {% for item in report.cat_breakdown.items %}
+                <div class="d-flex align-items-center justify-content-between p-2 mb-2 bg-light rounded-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-5">{{ item.icon }}</span>
+                        <span class="fw-semibold">{{ item.name }}</span>
+                    </div>
+                    <span class="fw-bold text-danger">{{ item.formatted_amount }}</span>
+                </div>
+            {% empty %}
+                <p class="text-muted text-center py-3">No expenses recorded for this report period.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- PERIOD TRANSACTIONS TABLE -->
+    <div class="col-12 col-lg-7">
+        <div class="glass-card">
+            <h6 class="fw-bold mb-3">📜 Transactions Statement</h6>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in report.transactions %}
+                            <tr>
+                                <td class="small text-muted">{{ tx.transaction_date|date:"d M Y" }}</td>
+                                <td>
+                                    {% if tx.category %}{{ tx.category.icon }} {{ tx.category.name }}{% else %}Uncategorized{% endif %}
+                                </td>
+                                <td>{{ tx.description|default:"-" }}</td>
+                                <td class="text-end fw-bold {% if tx.transaction_type == 'INCOME' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if tx.transaction_type == 'INCOME' %}+{% else %}-{% endif %} {{ CURRENCY }} {{ tx.amount }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No transactions found for this period.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

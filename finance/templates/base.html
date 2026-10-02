@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Personal Finance Manager{% endblock %}</title>
+    
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Mobile Top Header -->
+    <header class="top-header d-lg-none">
+        <a href="{% url 'dashboard' %}" class="app-brand">
+            <span>💎 Finance Tracker</span>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-indigo text-primary-light font-monospace fs-7 px-2 py-1 border border-primary-light">
+                {{ CURRENCY }}
+            </span>
+            <a href="{% url 'settings' %}" class="text-secondary fs-5 text-decoration-none">
+                <i class="bi bi-gear-fill"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Desktop Sidebar -->
+    <nav class="desktop-sidebar">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'dashboard' %}" class="app-brand fs-4">
+                <span>💎 Finance Tracker</span>
+            </a>
+        </div>
+        <ul class="nav nav-pills flex-column gap-2 mb-auto">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'transaction_list' %}" class="nav-link {% if active_page == 'transactions' %}active{% endif %}">
+                    <i class="bi bi-receipt-cutoff me-2"></i> Transactions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'transaction_add' %}" class="nav-link btn btn-primary text-white fw-bold my-2 text-start">
+                    <i class="bi bi-plus-circle-fill me-2"></i> Add Transaction
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'reports' %}" class="nav-link {% if active_page == 'reports' %}active{% endif %}">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i> Financial Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'budgets' %}" class="nav-link {% if active_page == 'budgets' %}active{% endif %}">
+                    <i class="bi bi-piggy-bank-fill me-2"></i> Budgets
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'settings' %}" class="nav-link {% if active_page == 'settings' %}active{% endif %}">
+                    <i class="bi bi-gear-fill me-2"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper container-fluid px-3 px-md-4 py-3">
+        <!-- Django Messages Alerts -->
+        {% if messages %}
+            <div class="row justify-content-center mb-3">
+                <div class="col-12 col-md-10">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm rounded-3" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="{% url 'dashboard' %}" class="nav-item-link {% if active_page == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill nav-icon"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'transaction_list' %}" class="nav-item-link {% if active_page == 'transactions' %}active{% endif %}">
+            <i class="bi bi-list-ul nav-icon"></i>
+            <span>List</span>
+        </a>
+        
+        <!-- Prominent Central Quick Add Button -->
+        <a href="#" data-bs-toggle="modal" data-bs-target="#quickAddModal" class="nav-add-btn text-decoration-none">
+            <i class="bi bi-plus-lg"></i>
+        </a>
+
+        <a href="{% url 'reports' %}" class="nav-item-link {% if active_page == 'reports' %}active{% endif %}">
+            <i class="bi bi-pie-chart-fill nav-icon"></i>
+            <span>Reports</span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item-link {% if active_page == 'settings' %}active{% endif %}">
+            <i class="bi bi-gear-fill nav-icon"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <!-- Floating Quick Add Modal -->
+    <div class="modal fade" id="quickAddModal" tabindex="-1" aria-labelledby="quickAddModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-2">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="quickAddModalLabel">⚡ Quick Add Transaction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickAddForm" method="POST" action="{% url 'quick_add_ajax' %}">
+                        {% csrf_token %}
+                        <div class="type-toggle-group">
+                            <button type="button" id="toggleExpense" class="type-toggle-btn active-expense">Expense</button>
+                            <button type="button" id="toggleIncome" class="type-toggle-btn">Income</button>
+                        </div>
+                        <input type="hidden" name="transaction_type" id="id_transaction_type" value="EXPENSE">
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">AMOUNT ({{ CURRENCY }})</label>
+                            <input type="number" step="0.01" min="0.01" name="amount" class="form-control form-input-lg" placeholder="0.00" inputmode="decimal" required autofocus>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">CATEGORY</label>
+                            <select name="category" class="form-select form-select-lg" required>
+                                {% for cat in global_categories %}
+                                    <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                                {% empty %}
+                                    <option value="">-- Select Category --</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">DESCRIPTION</label>
+                            <input type="text" name="description" class="form-control" placeholder="e.g. Lunch, Coffee, Taxi">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">PAYMENT METHOD</label>
+                            <select name="payment_method" class="form-select">
+                                <option value="CASH">Cash</option>
+                                <option value="CARD">Card</option>
+                                <option value="BANK">Bank Transfer</option>
+                                <option value="UPI">UPI / Online</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-lg mt-2">
+                            <i class="bi bi-check-lg me-1"></i> Save Transaction
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/transactions.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

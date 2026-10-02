@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transactions | Personal Finance{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- FILTER BAR -->
+    <div class="col-12">
+        <div class="glass-card mb-3">
+            <form method="GET" action="{% url 'transaction_list' %}" class="row g-2">
+                <!-- Search Box -->
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search transactions...">
+                    </div>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="col-6 col-md-2">
+                    <select name="type" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {% if selected_type == 'all' %}selected{% endif %}>All Types</option>
+                        <option value="EXPENSE" {% if selected_type == 'EXPENSE' %}selected{% endif %}>Expenses Only</option>
+                        <option value="INCOME" {% if selected_type == 'INCOME' %}selected{% endif %}>Income Only</option>
+                    </select>
+                </div>
+
+                <!-- Period Filter -->
+                <div class="col-6 col-md-3">
+                    <select name="period" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {% if selected_period == 'all' %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if selected_period == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if selected_period == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if selected_period == 'month' %}selected{% endif %}>This Month</option>
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-12 col-md-3">
+                    <select name="category" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"i" %}selected{% endif %}>
+                                {{ cat.icon }} {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TRANSACTIONS LIST -->
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold mb-0">Transactions ({{ transactions|length }})</h5>
+            <a href="{% url 'transaction_add' %}" class="btn btn-sm btn-primary fw-bold">
+                <i class="bi bi-plus-lg me-1"></i> Add Transaction
+            </a>
+        </div>
+
+        <div class="tx-list">
+            {% for tx in transactions %}
+                <div class="tx-item">
+                    <div class="d-flex align-items-center">
+                        <div class="tx-icon">
+                            {% if tx.category %}{{ tx.category.icon }}{% else %}📦{% endif %}
+                        </div>
+                        <div class="tx-details">
+                            <div class="tx-title">
+                                {% if tx.description %}
+                                    {{ tx.description }}
+                                {% elif tx.category %}
+                                    {{ tx.category.name }}
+                                {% else %}
+                                    Transaction
+                                {% endif %}
+                            </div>
+                            <div class="tx-meta">
+                                <span class="badge bg-light text-dark me-1">{{ tx.get_payment_method_display }}</span>
+                                {{ tx.transaction_date|date:"d M Y" }}
+                                {% if tx.category %}
+                                    &bull; <span class="text-secondary">{{ tx.category.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <div class="tx-amount me-2 {% if tx.transaction_type == 'INCOME' %}tx-income{% else %}tx-expense{% endif %}">
+                            {% if tx.transaction_type == 'INCOME' %}+{% else %}-{% endif %} {{ CURRENCY }} {{ tx.amount }}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <a href="{% url 'transaction_edit' tx.id %}" class="btn btn-sm btn-outline-secondary p-1 px-2" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'transaction_delete' tx.id %}" class="btn btn-sm btn-outline-danger p-1 px-2" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="glass-card text-center py-5">
+                    <i class="bi bi-search fs-1 text-muted opacity-50 mb-2 d-block"></i>
+                    <h6 class="fw-bold">No transactions found</h6>
+                    <p class="text-muted small mb-3">Try adjusting your search filters or add a new transaction.</p>
+                    <a href="{% url 'transaction_add' %}" class="btn btn-primary fw-bold">
+                        <i class="bi bi-plus-lg me-1"></i> Add Transaction
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

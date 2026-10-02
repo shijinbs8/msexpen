@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Budgets | Personal Finance{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- WEEKLY BUDGET CARD & FORM -->
+    <div class="col-12 col-md-6">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-3">📅 Weekly Budget Setup</h5>
+
+            <!-- Current Weekly Status -->
+            <div class="p-3 bg-light rounded-3 mb-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-muted small fw-bold">WEEKLY LIMIT</span>
+                    <span class="badge-status badge-{{ weekly_status.status_level }}">
+                        {{ weekly_status.percentage_used }}% Used
+                    </span>
+                </div>
+                <div class="fs-3 fw-bold text-dark mb-2">{{ weekly_status.formatted_budget }}</div>
+
+                <div class="progress-container">
+                    <div class="progress-bar-fill bar-{{ weekly_status.status_level }}" style="width: {{ weekly_status.percentage_used|default:0 }}%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Spent: <strong>{{ weekly_status.formatted_spent }}</strong></span>
+                    <span>Remaining: <strong class="text-success">{{ weekly_status.formatted_remaining }}</strong></span>
+                </div>
+            </div>
+
+            <!-- Set Weekly Budget Form -->
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="budget_type" value="WEEKLY">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">SET WEEKLY BUDGET ({{ CURRENCY }})</label>
+                    <input type="number" step="0.01" min="0" name="amount" value="{{ weekly_budget_obj.amount|default:'' }}" class="form-control form-control-lg" placeholder="e.g. 2000.00" inputmode="decimal" required>
+                </div>
+                <button type="submit" class="btn btn-primary fw-bold w-100 py-2">
+                    <i class="bi bi-save me-1"></i> Save Weekly Budget
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MONTHLY BUDGET CARD & FORM -->
+    <div class="col-12 col-md-6">
+        <div class="glass-card">
+            <h5 class="fw-bold mb-3">📆 Monthly Budget Setup</h5>
+
+            <!-- Current Monthly Status -->
+            <div class="p-3 bg-light rounded-3 mb-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-muted small fw-bold">MONTHLY LIMIT</span>
+                    <span class="badge-status badge-{{ monthly_status.status_level }}">
+                        {{ monthly_status.percentage_used }}% Used
+                    </span>
+                </div>
+                <div class="fs-3 fw-bold text-dark mb-2">{{ monthly_status.formatted_budget }}</div>
+
+                <div class="progress-container">
+                    <div class="progress-bar-fill bar-{{ monthly_status.status_level }}" style="width: {{ monthly_status.percentage_used|default:0 }}%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>Spent: <strong>{{ monthly_status.formatted_spent }}</strong></span>
+                    <span>Remaining: <strong class="text-success">{{ monthly_status.formatted_remaining }}</strong></span>
+                </div>
+            </div>
+
+            <!-- Set Monthly Budget Form -->
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="budget_type" value="MONTHLY">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">SET MONTHLY BUDGET ({{ CURRENCY }})</label>
+                    <input type="number" step="0.01" min="0" name="amount" value="{{ monthly_budget_obj.amount|default:'' }}" class="form-control form-control-lg" placeholder="e.g. 8000.00" inputmode="decimal" required>
+                </div>
+                <button type="submit" class="btn btn-primary fw-bold w-100 py-2">
+                    <i class="bi bi-save me-1"></i> Save Monthly Budget
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
